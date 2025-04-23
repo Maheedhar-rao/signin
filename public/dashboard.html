@@ -1,81 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Dashboard</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
-      text-align: center;
-    }
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: inline-block;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+    body { font-family: sans-serif; background: #f9f9f9; text-align: center; padding: 30px; }
+    .card { background: white; padding: 20px; margin-top: 50px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    button { margin-top: 20px; padding: 10px 20px; cursor: pointer; }
   </style>
 </head>
 <body>
+  <div class="card">
+    <h1>Welcome to Your Dashboard</h1>
+    <p id="user-info">Loading user info...</p>
+    <button onclick="logout()">Logout</button>
+  </div>
 
-<div class="card">
-  <h1>Welcome to your Dashboard</h1>
-  <p id="user-info">Verifying session...</p>
-  <button onclick="logout()">Logout</button>
-</div>
+  <script>
+    fetch('/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('user-info').innerHTML = `
+          Logged in as <b>${data.email}</b><br>
+          Role: <b>${data.role}</b>
+        `;
+      })
+      .catch(() => {
+        alert("Unauthorized. Redirecting to login.");
+        window.location.href = '/login.html';
+      });
 
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
-<script>
-  // Prevent back button
-  window.onload = () => {
-    history.pushState(null, null, window.location.href);
-    window.onpopstate = () => {
-      const confirmLogout = confirm("Are you sure you want to log out?");
-      if (confirmLogout) {
-        logout();
-      } else {
-        history.pushState(null, null, window.location.href);
-      }
-    };
-  };
-
-  function logout() {
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
-  }
-
-  // Check token and show user info
-  const token = localStorage.getItem('token');
-  const infoEl = document.getElementById('user-info');
-
-  if (!token) {
-    infoEl.innerText = "Unauthorized. Redirecting...";
-    setTimeout(() => window.location.href = '/login.html', 1500);
-  } else {
-    try {
-      const decoded = jwt_decode(token);
-      infoEl.innerHTML = `
-        Logged in as <b>${decoded.email}</b><br>
-        Role: <b>${decoded.role}</b>
-      `;
-    } catch (err) {
-      infoEl.innerText = "Invalid session. Logging out...";
-      logout();
+    function logout() {
+      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => window.location.href = '/login.html');
     }
-  }
-</script>
 
+    // Prevent back navigation without logout
+    window.onload = () => {
+      history.pushState(null, null, location.href);
+      window.onpopstate = () => {
+        if (confirm("Log out and go back?")) logout();
+        else history.pushState(null, null, location.href);
+      };
+    };
+  </script>
 </body>
 </html>
