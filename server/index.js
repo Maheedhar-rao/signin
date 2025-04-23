@@ -12,6 +12,9 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/auth', authRoutes);
 
 const PORT = process.env.PORT || 4000;
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
 app.listen(PORT, () => {
   console.log(`Signin service running on http://localhost:${PORT}`);
 });
