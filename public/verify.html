@@ -1,0 +1,33 @@
+<form id="codeForm">
+  <input type="text" id="code" required placeholder="Enter code (try 123456)" />
+  <button type="submit">Verify</button>
+</form>
+<p id="status"></p>
+
+<script>
+  const email = new URLSearchParams(window.location.search).get('email');
+
+  document.getElementById('codeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = document.getElementById('code').value;
+    const res = await fetch('/auth/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, code }),
+    });
+
+    const result = await res.json();
+    const statusEl = document.getElementById('status');
+
+    if (res.ok) {
+      localStorage.setItem('token', result.token);
+      statusEl.innerText = '✅ Login successful!';
+      statusEl.style.color = 'green';
+      // Optionally redirect
+      // setTimeout(() => window.location.href = 'https://app.xyz.com/dashboard', 1000);
+    } else {
+      statusEl.innerText = `❌ ${result.message}`;
+      statusEl.style.color = 'red';
+    }
+  });
+</script>
