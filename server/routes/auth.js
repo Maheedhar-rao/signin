@@ -49,7 +49,7 @@ router.post('/verify-code', async (req, res) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: true,
-    sameSite: 'Strict',
+    sameSite: '.croccrm.com',
     maxAge: 60 * 60 * 1000 // 1 hour
   });
 
