@@ -67,35 +67,47 @@
   </div>
 
   <script>
-    fetch('/auth/me', { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        document.getElementById('user-info').innerHTML = `
-          ✅ Logged in as <b>${data.email}</b><br>
-          🔐 Role: <b>${data.role}</b>
-        `;
-      })
-      .catch(() => {
-        alert("Unauthorized. Redirecting to login.");
+  // Redirect if not authenticated
+  fetch('/auth/me', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('user-info').innerHTML = `
+        ✅ Logged in as <b>${data.email}</b><br>
+        🔐 Role: <b>${data.role}</b>
+      `;
+    })
+    .catch(() => {
+      alert("Unauthorized. Redirecting to login.");
+      location.replace('/login.html');
+    });
+
+  function logout() {
+    fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+      .then(() => {
+        // Replace current history state
+        history.replaceState(null, null, '/login.html');
         window.location.href = '/login.html';
       });
+  }
 
-    function logout() {
-      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
-        .then(() => window.location.href = '/login.html');
-    }
-
-    // 🔒 Prevent back navigation after login
-    window.onload = () => {
-      history.pushState(null, null, location.href);
-      window.onpopstate = () => {
-        if (confirm("Log out and go back?")) logout();
-        else history.pushState(null, null, location.href);
-      };
+  // 🔒 HARD BLOCK: disable back navigation out of dashboard
+  window.onload = () => {
+    // Clear past history and push new clean state
+    history.pushState(null, null, location.href);
+    window.onpopstate = () => {
+      const confirmLogout = confirm("Are you sure you want to logout?");
+      if (confirmLogout) {
+        logout();
+      } else {
+        // Re-push dashboard so they stay stuck here
+        history.pushState(null, null, location.href);
+      }
     };
-  </script>
+  };
+</script>
+
 </body>
 </html>
