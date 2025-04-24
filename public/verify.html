@@ -1,33 +1,115 @@
-<form id="codeForm">
-  <input type="text" id="code" required placeholder="Enter code (try 123456)" />
-  <button type="submit">Verify</button>
-</form>
-<p id="status"></p>
-
-<script>
-  const email = new URLSearchParams(window.location.search).get('email');
-
-  document.getElementById('codeForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const code = document.getElementById('code').value;
-    const res = await fetch('/auth/verify-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code }),
-    });
-
-    const result = await res.json();
-    const statusEl = document.getElementById('status');
-
-    if (res.ok) {
-      localStorage.setItem('token', result.token);
-      statusEl.innerText = '✅ Login successful!';
-      statusEl.style.color = 'green';
-      // Optionally redirect
-      setTimeout(() => window.location.href = '/dashboard.html', 1000);
-    } else {
-      statusEl.innerText = `❌ ${result.message}`;
-      statusEl.style.color = 'red';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🐊 CROC | Verify Code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-  });
-</script>
+
+    body {
+      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #2c3e50;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background: #4ca1af;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #357a8a;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #e74c3c;
+    }
+
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔐 Enter Verification Code</h2>
+    <form id="codeForm">
+      <input type="text" id="code" required placeholder="6-digit code from email" />
+      <button type="submit">Verify</button>
+    </form>
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const email = new URLSearchParams(window.location.search).get('email');
+
+    document.getElementById('codeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('code').value;
+      const res = await fetch('/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+      const statusEl = document.getElementById('status');
+
+      if (res.ok) {
+        statusEl.innerText = '✅ Login successful!';
+        statusEl.className = 'success';
+        setTimeout(() => window.location.href = '/dashboard.html', 1000);
+      } else {
+        statusEl.innerText = `❌ ${data.message}`;
+        statusEl.className = '';
+      }
+    });
+  </script>
+</body>
+</html>
