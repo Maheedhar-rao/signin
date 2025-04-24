@@ -64,6 +64,7 @@
     <h1>Welcome to Your CROC Dashboard</h1>
     <p id="user-info">Loading user info...</p>
     <button onclick="logout()">Logout</button>
+    <button onclick="goToSubmissions()" style="margin-top: 10px;">Submissions</button>
   </div>
 
   <script>
@@ -83,7 +84,9 @@
       alert("Unauthorized. Redirecting to login.");
       location.replace('/login.html');
     });
-
+  function goToSubmissions() {
+  window.location.href = 'https://submissions.croccrm.com';
+}
   function logout() {
     fetch('/auth/logout', { method: 'POST', credentials: 'include' })
       .then(() => {
@@ -92,6 +95,7 @@
         window.location.href = '/login.html';
       });
   }
+  
 
   // 🔒 HARD BLOCK: disable back navigation out of dashboard
   window.onload = () => {
