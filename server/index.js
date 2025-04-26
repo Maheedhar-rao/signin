@@ -3,24 +3,31 @@ const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
+const verifyCookieJWT = require('../server/middleware/verifyCookieJWT');
 
 require('dotenv').config();
 const app = express();
 
-// Enable CORS for cookie-based auth
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({
+  origin: ['https://croccrm.com', 'https://login.croccrm.com'],  
+  credentials: true
+}));
 
-// Parse cookies from client
+
 app.use(cookieParser());
 app.use(express.json());
 
-// Serve static files like login.html, verify.html, dashboard.html
+
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Mount auth routes
 app.use('/auth', authRoutes);
 
-// Redirect root to login
+
+app.get('/dashboard.html', verifyCookieJWT, (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
+
 app.get('/', (req, res) => {
   res.redirect('/login.html');
 });
