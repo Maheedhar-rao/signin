@@ -49,7 +49,8 @@ router.post('/verify-code', async (req, res) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: true,
-    sameSite: '.croccrm.com',
+    sameSite: 'none',
+    domain: '.croccrm.com',
     maxAge: 60 * 60 * 1000 // 1 hour
   });
 
