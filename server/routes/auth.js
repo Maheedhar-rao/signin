@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../utils/supabaseClient');
 const { signToken, verifyToken } = require('../utils/tokenUtils');
+const verifyCookieJWT = require('../middleware/verifyCookieJWT');
+
 const sendEmail = require('../utils/sendEmail');
 
 // ✅ Step 1: Check if email exists, generate + email code
