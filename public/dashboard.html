@@ -26,7 +26,7 @@
       padding: 40px;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      max-width: 500px;
+      max-width: 600px;
       width: 100%;
       text-align: center;
     }
@@ -43,11 +43,19 @@
       line-height: 1.6;
     }
 
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
     button {
       background: #4ca1af;
       color: white;
       border: none;
-      padding: 12px 24px;
+      padding: 12px 20px;
       font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -63,55 +71,70 @@
   <div class="card">
     <h1>Welcome to Your CROC Dashboard</h1>
     <p id="user-info">Loading user info...</p>
-    <button onclick="logout()">Logout</button>
-    <button onclick="goToSubmissions()" style="margin-top: 10px;">Submissions</button>
+
+    <div class="button-group">
+      <button onclick="goToSubmissions()">Submissions</button>
+      <button onclick="goToDashboard()">Dashboard</button>
+      <button onclick="goToUpdates()">Updates</button>
+      <button onclick="goToAPI()">API</button>
+      <button onclick="logout()">Logout</button>
+    </div>
   </div>
 
   <script>
-  // Redirect if not authenticated
-  fetch('/auth/me', { credentials: 'include' })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(data => {
-      document.getElementById('user-info').innerHTML = `
-        ✅ Logged in as <b>${data.email}</b><br>
-        🔐 Role: <b>${data.role}</b>
-      `;
-    })
-    .catch(() => {
-      alert("Unauthorized. Redirecting to login.");
-      location.replace('/login.html');
-    });
-  function goToSubmissions() {
-  window.location.href = 'https://submissions.croccrm.com';
-}
-  function logout() {
-    fetch('/auth/logout', { method: 'POST', credentials: 'include' })
-      .then(() => {
-        // Replace current history state
-        history.replaceState(null, null, '/login.html');
-        window.location.href = '/login.html';
+    
+    fetch('/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('user-info').innerHTML = `
+          ✅ Logged in as <b>${data.email}</b><br>
+          🔐 Role: <b>${data.role}</b>
+        `;
+      })
+      .catch(() => {
+        alert("Unauthorized. Redirecting to login.");
+        location.replace('/login.html');
       });
-  }
-  
 
-  // 🔒 HARD BLOCK: disable back navigation out of dashboard
-  window.onload = () => {
-    // Clear past history and push new clean state
-    history.pushState(null, null, location.href);
-    window.onpopstate = () => {
-      const confirmLogout = confirm("Are you sure you want to logout?");
-      if (confirmLogout) {
-        logout();
-      } else {
-        // Re-push dashboard so they stay stuck here
-        history.pushState(null, null, location.href);
-      }
+    function goToSubmissions() {
+      window.location.href = 'https://submissions.croccrm.com'; 
+    }
+
+    function goToDashboard() {
+      window.location.href = 'https://dashboard.croccrm.com';
+    }
+
+    function goToUpdates() {
+      window.location.href = 'https://dashboard.croccrm.com/updates';
+    }
+
+    function goToAPI() {
+      window.location.href = 'https://dashboard.croccrm.com/api'; 
+    }
+
+    function logout() {
+      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => {
+          history.replaceState(null, null, '/login.html');
+          window.location.href = '/login.html';
+        });
+    }
+
+
+    window.onload = () => {
+      history.pushState(null, null, location.href);
+      window.onpopstate = () => {
+        const confirmLogout = confirm("Are you sure you want to logout?");
+        if (confirmLogout) {
+          logout();
+        } else {
+          history.pushState(null, null, location.href);
+        }
+      };
     };
-  };
-</script>
-
+  </script>
 </body>
 </html>
