@@ -90,7 +90,7 @@
   <script>
     document.getElementById('emailForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      let email = document.getElementById('email').value.trim().toLowerCase();
       const res = await fetch('/auth/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
