@@ -4,10 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const verifyCookieJWT = require('../server/middleware/verifyCookieJWT');
-const dealsRoute = require('./routes/deals');
 
-
-app.use('/api/deals', dealsRoute);
 
 require('dotenv').config();
 const app = express();
