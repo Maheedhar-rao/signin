@@ -10,7 +10,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-  origin: ['https://croccrm.com', 'https://login.croccrm.com'],  
+  origin: ['https://croccrm.com', 'https://login.croccrm.com', 'https://dashboard.croccrm.com'],  
   credentials: true
 }));
 
