@@ -6,7 +6,7 @@ const verifyCookieJWT = require('../middleware/verifyCookieJWT');
 
 const sendEmail = require('../utils/sendEmail');
 
-// ✅ Step 1: Check if email exists, generate + email code
+
 router.post('/check-email', async (req, res) => {
   const { email } = req.body;
 
@@ -26,7 +26,7 @@ router.post('/check-email', async (req, res) => {
   res.json({ message: 'Verification code sent' });
 });
 
-// ✅ Step 2: Verify code and issue JWT in HttpOnly cookie
+
 router.post('/verify-code', async (req, res) => {
   const { email, code } = req.body;
 
@@ -59,13 +59,13 @@ router.post('/verify-code', async (req, res) => {
   res.json({ message: 'Login successful' });
 });
 
-// ✅ Logout
+
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out' });
 });
 
-// ✅ Auth check endpoint
+
 router.get('/me', (req, res) => {
   const token = req.cookies.token;
   if (!token) return res.status(401).send('Unauthorized');
