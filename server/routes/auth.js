@@ -53,7 +53,7 @@ router.post('/verify-code', async (req, res) => {
     secure: true,
     sameSite: 'none',
     domain: '.croccrm.com',
-    maxAge: 60 * 60 * 1000 // 1 hour
+    maxAge: 6 * 60 * 60 * 1000 // 1 hour
   });
 
   res.json({ message: 'Login successful' });
