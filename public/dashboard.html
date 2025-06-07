@@ -100,24 +100,25 @@
       });
 
     function goToSubmissions() {
-      window.location.href = 'https://submissions.croccrm.com'; 
+      window.open('https://submissions.croccrm.com', '_blank'); 
     }
 
     function goToDashboard() {
-      window.location.href = 'https://dashboard.croccrm.com';
+      window.open('https://dashboard.croccrm.com', '_blank');
     }
 
     function goToUpdates() {
-      window.location.href = 'https://dashboard.croccrm.com/updates';
+      window.open('https://dashboard.croccrm.com/updates', '_blank');
     }
 
     function goToAPI() {
-      window.location.href = 'https://dashboard.croccrm.com/api'; 
+      window.open('https://dashboard.croccrm.com/api', '_blank');
     }
 
     function logout() {
       fetch('/auth/logout', { method: 'POST', credentials: 'include' })
         .then(() => {
+          localStorage.setItem('logout', Date.now());
           history.replaceState(null, null, '/login.html');
           window.location.href = '/login.html';
         });
