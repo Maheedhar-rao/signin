@@ -59,7 +59,7 @@ router.post('/verify-code', async (req, res) => {
   res.json({
     message: 'Login successful',
     email: user.email,
-    role: user.role
+    //role: user.role
   });
 });
 
