@@ -104,7 +104,7 @@ router.get('/api/deals', verifyCookieJWT, async (req, res) => {
   const user = req.user;
   const { userId } = req.query;
 
-  if (user.role !== 'admin') {
+  if (user.email !== 'govadamaheedhar@gmail.com') {
     return res.status(403).json({ error: 'Access denied' });
   }
 
@@ -114,15 +114,17 @@ router.get('/api/deals', verifyCookieJWT, async (req, res) => {
 
   try {
     const { data, error } = await supabase
-      .from('live_submissions')
+      .from('deals_submitted') 
       .select('*')
       .eq('user_id', userId);
 
     if (error) throw error;
     res.json(data);
   } catch (err) {
+    console.error('Error fetching deals:', err);
     res.status(500).json({ error: 'Failed to fetch deals' });
   }
 });
+
 
 module.exports = router;
