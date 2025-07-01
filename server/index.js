@@ -23,6 +23,13 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/auth', authRoutes);
 
+app.get('/config', (req, res) => {
+  res.json({
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_KEY: process.env.SUPABASE_KEY
+  });
+});
+
 
 app.get('/dashboard.html', verifyCookieJWT, (req, res) => {
   res.sendFile(path.join(__dirname, '../public/dashboard.html'));
