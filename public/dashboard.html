@@ -158,11 +158,9 @@
   <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-  // Fetch config
   const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  // Get auth info
   fetch('/auth/me', { credentials: 'include' })
     .then(res => {
       if (!res.ok) throw new Error();
@@ -220,8 +218,8 @@
       const { data: todayDeals, error: todayError } = await supabase
         .from('deals_submitted')
         .select('*')
-        .gte('created_at', `${today}T00:00:00`)
-        .lte('created_at', `${today}T23:59:59`);
+        .gte('creation_date', `${today}T00:00:00`)
+        .lte('creation_date', `${today}T23:59:59`);
 
       if (todayError) {
         console.error('❌ Error fetching today’s deals:', todayError);
@@ -254,10 +252,9 @@
         }
       });
 
-      // (leave other charts unchanged or dummy data as needed)
     } catch (err) {
-      console.error('🔥 Critical dashboard error:', err.message || err);
-      document.getElementById('total-deals').innerText = '⚠️ Error loading data.';
+      console.error(' Critical dashboard error:', err.message || err);
+      document.getElementById('total-deals').innerText = ' Error loading data.';
     }
   }
 
