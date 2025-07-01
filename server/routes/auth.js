@@ -56,8 +56,11 @@ router.post('/verify-code', async (req, res) => {
     maxAge: 6 * 60 * 60 * 1000 // 1 hour
   });
 
-  res.json({ message: 'Login successful' });
-});
+  res.json({
+    message: 'Login successful',
+    email: user.email,
+    role: user.role
+  });
 
 
 router.post('/logout', (req, res) => {
