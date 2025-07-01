@@ -1,74 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard | CROC</title>
+  <meta charset="UTF-8" />
+  <title>🐊 CROC | Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding: 20px;
-      background: #f4f7f9;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    h2 {
+    body {
+      background: linear-gradient(to right, #2c3e50, #4ca1af);
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 960px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    #user-info {
+      font-size: 15px;
       margin-bottom: 20px;
+      text-align: center;
+      color: #555;
     }
 
     select {
-      padding: 10px;
+      padding: 12px;
       font-size: 16px;
-      border-radius: 6px;
-      margin-bottom: 20px;
       width: 100%;
       max-width: 400px;
+      margin: 0 auto 30px auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
 
     .deal {
-      background: white;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: #fdfdfd;
+      padding: 18px 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
     }
 
     .deal p {
-      margin: 5px 0;
+      margin: 4px 0;
+      font-size: 15px;
+      color: #444;
+    }
+
+    .button-group {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    button {
+      background: #4ca1af;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #357a8a;
+    }
+
+    .empty {
+      text-align: center;
+      color: #999;
+      font-style: italic;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h2> Admin Panel – View User Deals</h2>
+  <div class="card">
+    <h1>🛠️ Admin Dashboard</h1>
+    <p id="user-info">Loading admin info...</p>
 
-  <label for="userDropdown">Select User:</label>
-  <select id="userDropdown">
-    <option value="">-- Select a user --</option>
-  </select>
+    <select id="userDropdown">
+      <option value="">🔽 Select a user</option>
+    </select>
 
-  <div id="dealsContainer"></div>
+    <div id="dealsContainer" class="deals"></div>
+
+    <div class="button-group">
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 
   <script>
+    async function fetchUserInfo() {
+      try {
+        const res = await fetch('/auth/me', { credentials: 'include' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        document.getElementById('user-info').innerHTML = `
+          ✅ Logged in as <b>${data.email}</b> | Admin Access
+        `;
+
+        // Only allow specific admin
+        if (data.email !== 'govadamaheedhar@gmail.com') {
+          alert("Access denied.");
+          window.location.href = '/login.html';
+        }
+      } catch {
+        alert("Unauthorized. Redirecting to login.");
+        window.location.href = '/login.html';
+      }
+    }
+
     async function fetchUsers() {
       const res = await fetch('/auth/api/users', { credentials: 'include' });
       const users = await res.json();
       const dropdown = document.getElementById('userDropdown');
-      users.forEach(user => {
-        const option = document.createElement('option');
-        option.value = user.id;
-        option.textContent = user.email;
-        dropdown.appendChild(option);
+      users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = u.email;
+        dropdown.appendChild(opt);
       });
     }
 
-    async function fetchDeals(userId) {
+    async function fetchDealsForUser(userId) {
       const res = await fetch(`/auth/api/deals?userId=${userId}`, { credentials: 'include' });
       const deals = await res.json();
       const container = document.getElementById('dealsContainer');
       container.innerHTML = '';
 
-      if (deals.length === 0) {
-        container.innerHTML = '<p>No deals found for this user.</p>';
+      if (!deals || deals.length === 0) {
+        container.innerHTML = '<p class="empty">No deals found for this user.</p>';
         return;
       }
 
@@ -79,6 +167,7 @@
           <p><strong>Business:</strong> ${deal.business_name || 'N/A'}</p>
           <p><strong>Status:</strong> ${deal.status || 'N/A'}</p>
           <p><strong>Submitted:</strong> ${deal.created_at || 'N/A'}</p>
+          <p><strong>Amount Requested:</strong> ${deal.requested_amount || 'N/A'}</p>
         `;
         container.appendChild(div);
       });
@@ -86,10 +175,28 @@
 
     document.getElementById('userDropdown').addEventListener('change', (e) => {
       const userId = e.target.value;
-      if (userId) fetchDeals(userId);
+      if (userId) fetchDealsForUser(userId);
     });
 
-    fetchUsers();
+    function logout() {
+      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => {
+          localStorage.setItem('logout', Date.now());
+          window.location.href = '/login.html';
+        });
+    }
+
+    window.onload = () => {
+      fetchUserInfo();
+      fetchUsers();
+
+      history.pushState(null, null, location.href);
+      window.onpopstate = () => {
+        const confirmLogout = confirm("Are you sure you want to logout?");
+        if (confirmLogout) logout();
+        else history.pushState(null, null, location.href);
+      };
+    };
   </script>
 </body>
 </html>
