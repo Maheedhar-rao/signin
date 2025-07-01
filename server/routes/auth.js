@@ -61,7 +61,7 @@ router.post('/verify-code', async (req, res) => {
     email: user.email,
     role: user.role
   });
-
+});
 
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
@@ -78,6 +78,50 @@ router.get('/me', (req, res) => {
     res.json(decoded);
   } catch {
     res.status(403).send('Invalid token');
+  }
+});
+
+router.get('/api/users', verifyCookieJWT, async (req, res) => {
+  const user = req.user;
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('registered_users')
+      .select('id, email')
+      .order('email');
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+router.get('/api/deals', verifyCookieJWT, async (req, res) => {
+  const user = req.user;
+  const { userId } = req.query;
+
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId' });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('live_submissions')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch deals' });
   }
 });
 
