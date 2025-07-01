@@ -101,10 +101,10 @@
       const data = await res.json();
       const statusEl = document.getElementById('status');
 
-      if (res.ok && data.success) {
+      if (res.ok && data.email) {
         statusEl.innerText = '✅ Login successful!';
         statusEl.className = 'success';
-        if (email === 'govadamaheedhar@gmail.com') {
+        if (data.email.toLowerCase() === 'govadamaheedhar@gmail.com') {
         setTimeout(() => window.location.href = '/admin.html', 1000);
       } else {
         setTimeout(() => window.location.href = '/dashboard.html', 1000);
