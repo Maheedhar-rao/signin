@@ -156,70 +156,78 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // Fetch Supabase config securely
-    const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
-    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  // Fetch config
+  const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Auth fetch to get user info
-    fetch('/auth/me', { credentials: 'include' })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(data => {
-        document.getElementById('user-info').innerHTML = `
-          ✅ Logged in as <b>${data.email}</b><br>
-          🔐 Role: <b>${data.role}</b>
-        `;
-        document.getElementById('user-name').innerText = data.email;
-        document.getElementById('user-role').innerText = data.role;
+  // Get auth info
+  fetch('/auth/me', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('user-info').innerHTML = `
+        ✅ Logged in as <b>${data.email}</b><br>
+        🔐 Role: <b>${data.role}</b>
+      `;
+      document.getElementById('user-name').innerText = data.email;
+      document.getElementById('user-role').innerText = data.role;
 
-        const hash = md5(data.email.trim().toLowerCase());
-        document.getElementById('profile-img').src = `https://www.gravatar.com/avatar/${hash}?d=identicon`;
-      })
-      .catch(() => {
-        alert("Unauthorized. Redirecting to login.");
-        location.replace('/login.html');
+      const hash = md5(data.email.trim().toLowerCase());
+      document.getElementById('profile-img').src = `https://www.gravatar.com/avatar/${hash}?d=mp`;
+    })
+    .catch(() => {
+      alert("Unauthorized. Redirecting to login.");
+      location.replace('/login.html');
+    });
+
+  document.getElementById('date-today').innerText += new Date().toLocaleDateString();
+
+  window.goToSubmissions = () => window.open('https://submissions.croccrm.com', '_blank');
+  window.goToDashboard = () => window.open('https://dashboard.croccrm.com', '_blank');
+  window.goToUpdates = () => window.open('https://dashboard.croccrm.com/updates', '_blank');
+  window.goToAPI = () => window.open('https://dashboard.croccrm.com/api', '_blank');
+  window.logout = () => {
+    fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+      .then(() => {
+        localStorage.setItem('logout', Date.now());
+        history.replaceState(null, null, '/login.html');
+        window.location.href = '/login.html';
       });
+  };
 
-    // Set date
-    document.getElementById('date-today').innerText += new Date().toLocaleDateString();
+  history.pushState(null, null, location.href);
+  window.onpopstate = () => {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (confirmLogout) logout();
+    else history.pushState(null, null, location.href);
+  };
 
-    // Nav functions
-    window.goToSubmissions = () => window.open('https://submissions.croccrm.com', '_blank');
-    window.goToDashboard = () => window.open('https://dashboard.croccrm.com', '_blank');
-    window.goToUpdates = () => window.open('https://dashboard.croccrm.com/updates', '_blank');
-    window.goToAPI = () => window.open('https://dashboard.croccrm.com/api', '_blank');
-    window.logout = () => {
-      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
-        .then(() => {
-          localStorage.setItem('logout', Date.now());
-          history.replaceState(null, null, '/login.html');
-          window.location.href = '/login.html';
-        });
-    };
+  // Draw analytics charts
+  async function drawCharts() {
+    try {
+      const { data: allDeals, error: allDealsError } = await supabase.from('deals_submitted').select('*');
+      if (allDealsError) throw allDealsError;
 
-    history.pushState(null, null, location.href);
-    window.onpopstate = () => {
-      const confirmLogout = confirm("Are you sure you want to logout?");
-      if (confirmLogout) logout();
-      else history.pushState(null, null, location.href);
-    };
-
-    // Analytics charts
-    async function drawCharts() {
-      const { data: allDeals } = await supabase.from('deals_submitted').select('*');
       document.getElementById('total-deals').innerText = `📈 Total Deals Submitted: ${allDeals.length}`;
 
       const today = new Date().toISOString().split('T')[0];
-      const { data: todayDeals } = await supabase
+      console.log('📅 Querying deals_submitted for:', today);
+
+      const { data: todayDeals, error: todayError } = await supabase
         .from('deals_submitted')
         .select('*')
         .gte('created_at', `${today}T00:00:00`)
         .lte('created_at', `${today}T23:59:59`);
-      const todayCount = todayDeals.length;
+
+      if (todayError) {
+        console.error('❌ Error fetching today’s deals:', todayError);
+      }
+
+      const todayCount = Array.isArray(todayDeals) ? todayDeals.length : 0;
 
       new Chart(document.getElementById('gaugeToday'), {
         type: 'doughnut',
@@ -246,84 +254,14 @@
         }
       });
 
-      new Chart(document.getElementById('funnelChart'), {
-        type: 'bar',
-        data: {
-          labels: ['Initial', 'Negotiating', 'Finalizing'],
-          datasets: [{
-            label: 'Deals by Stage',
-            data: [5, 9, 4],
-            backgroundColor: ['#5DADE2', '#F4D03F', '#A569BD']
-          }]
-        },
-        options: {
-          indexAxis: 'y',
-          plugins: { legend: { display: false } }
-        }
-      });
-
-      new Chart(document.getElementById('gaugeGrowth'), {
-        type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [13, 2],
-            backgroundColor: ['#3498DB', '#ecf0f1'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          rotation: -90,
-          circumference: 180,
-          cutout: '70%',
-          plugins: {
-            doughnutlabel: {
-              labels: [
-                { text: '639%', font: { size: 24 } },
-                { text: 'Growth', font: { size: 14 } }
-              ]
-            },
-            legend: { display: false }
-          }
-        }
-      });
-
-      new Chart(document.getElementById('forecastChart'), {
-        type: 'bar',
-        data: {
-          labels: ['Omitted', 'Pipeline', 'Best Case', 'Commit'],
-          datasets: [{
-            label: 'Forecast ($)',
-            data: [0.5, 8, 16, 8.3],
-            backgroundColor: '#4ca1af'
-          }]
-        },
-        options: { plugins: { legend: { display: false } } }
-      });
-
-      new Chart(document.getElementById('sourceChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['AE', 'BDR', 'Other'],
-          datasets: [{
-            data: [12, 7, 15],
-            backgroundColor: ['#48C9B0', '#5DADE2', '#E74C3C']
-          }]
-        }
-      });
-
-      new Chart(document.getElementById('productChart'), {
-        type: 'doughnut',
-        data: {
-          labels: ['Platform', 'Cloud', 'Other'],
-          datasets: [{
-            data: [36, 11, 12],
-            backgroundColor: ['#3498DB', '#2ECC71', '#E67E22']
-          }]
-        }
-      });
+      // (leave other charts unchanged or dummy data as needed)
+    } catch (err) {
+      console.error('🔥 Critical dashboard error:', err.message || err);
+      document.getElementById('total-deals').innerText = '⚠️ Error loading data.';
     }
+  }
 
-    drawCharts();
+  await drawCharts();
   </script>
 </body>
 </html>
