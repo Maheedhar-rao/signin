@@ -104,7 +104,7 @@
       if (res.ok && data.success) {
         statusEl.innerText = '✅ Login successful!';
         statusEl.className = 'success';
-        if (data.role === 'admin' || email === 'govadamaheedhar@gmail.com') {
+        if (email === 'govadamaheedhar@gmail.com') {
         setTimeout(() => window.location.href = '/admin.html', 1000);
       } else {
         setTimeout(() => window.location.href = '/dashboard.html', 1000);
