@@ -133,7 +133,7 @@
 </head>
 <body>
   <div class="card">
-    <h1>🛠️ Admin Dashboard</h1>
+    <h1> Admin Dashboard</h1>
     <p id="user-info">Loading admin info...</p>
 
     <select id="userDropdown">
@@ -220,9 +220,8 @@
         div.innerHTML = `
           <p><strong>ID:</strong> ${deal.id || 'N/A'}</p>
           <p><strong>Business:</strong> ${deal.business_name || 'N/A'}</p>
-          <p><strong>Created At:</strong> ${deal.created_at || 'N/A'}</p>
-          <p><strong>Deal ID:</strong> ${deal.deal_id || 'N/A'}</p>
-          <p><strong>Contact Name:</strong> ${deal.name || 'N/A'}</p>
+          <p><strong>Created At:</strong> ${deal.created_date || 'N/A'}</p>
+          <p><strong>Deal ID:</strong> ${deal.dealid || 'N/A'}</p>
           <p><strong>Lenders:</strong> ${deal.lender_names || 'N/A'}</p>
         `;
         container.appendChild(div);
