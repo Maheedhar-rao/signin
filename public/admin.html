@@ -28,7 +28,7 @@
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       width: 100%;
-      max-width: 960px;
+      max-width: 1000px;
     }
 
     h1 {
@@ -50,8 +50,19 @@
       font-size: 16px;
       width: 100%;
       max-width: 400px;
-      margin: 0 auto 30px auto;
+      margin: 0 auto 20px auto;
       display: block;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 15px;
+      width: 100%;
+      max-width: 400px;
+      display: block;
+      margin: 10px auto 20px auto;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
@@ -97,6 +108,27 @@
       font-style: italic;
       margin-top: 20px;
     }
+
+    #paginationControls {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    #paginationControls button {
+      margin: 3px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #paginationControls button.active {
+      background: #4ca1af;
+      color: #fff;
+      border-color: #4ca1af;
+    }
   </style>
 </head>
 <body>
@@ -108,7 +140,10 @@
       <option value="">🔽 Select a user</option>
     </select>
 
+    <input type="text" id="searchBar" placeholder="🔍 Search deals...">
+
     <div id="dealsContainer" class="deals"></div>
+    <div id="paginationControls"></div>
 
     <div class="button-group">
       <button onclick="logout()">Logout</button>
@@ -116,17 +151,19 @@
   </div>
 
   <script>
+    let allDeals = [];
+    let currentPage = 1;
+    const dealsPerPage = 100;
+
     async function fetchUserInfo() {
       try {
         const res = await fetch('/auth/me', { credentials: 'include' });
         if (!res.ok) throw new Error();
         const data = await res.json();
 
-        document.getElementById('user-info').innerHTML = `
-          ✅ Logged in as <b>${data.email}</b> | Admin Access
-        `;
+        document.getElementById('user-info').innerHTML =
+          `✅ Logged in as <b>${data.email}</b> | Admin Access`;
 
-        // Only allow specific admin
         if (data.email !== 'govadamaheedhar@gmail.com') {
           alert("Access denied.");
           window.location.href = '/login.html';
@@ -151,31 +188,75 @@
 
     async function fetchDealsForUser(userId) {
       const res = await fetch(`/auth/api/deals?userId=${userId}`, { credentials: 'include' });
-      const deals = await res.json();
+      allDeals = await res.json();
+      currentPage = 1;
+      renderDeals();
+    }
+
+    function renderDeals() {
       const container = document.getElementById('dealsContainer');
       container.innerHTML = '';
 
-      if (!deals || deals.length === 0) {
-        container.innerHTML = '<p class="empty">No deals found for this user.</p>';
+      const searchQuery = document.getElementById('searchBar').value.toLowerCase();
+      const filtered = allDeals.filter(deal =>
+        (deal.business_name || '').toLowerCase().includes(searchQuery) ||
+        (deal.name || '').toLowerCase().includes(searchQuery) ||
+        (deal.lender_names || '').toLowerCase().includes(searchQuery)
+      );
+
+      const totalPages = Math.ceil(filtered.length / dealsPerPage);
+      const startIdx = (currentPage - 1) * dealsPerPage;
+      const currentDeals = filtered.slice(startIdx, startIdx + dealsPerPage);
+
+      if (currentDeals.length === 0) {
+        container.innerHTML = '<p class="empty">No deals found.</p>';
+        renderPagination(0);
         return;
       }
 
-      deals.forEach(deal => {
+      currentDeals.forEach(deal => {
         const div = document.createElement('div');
         div.className = 'deal';
         div.innerHTML = `
+          <p><strong>ID:</strong> ${deal.id || 'N/A'}</p>
           <p><strong>Business:</strong> ${deal.business_name || 'N/A'}</p>
-          <p><strong>Status:</strong> ${deal.status || 'N/A'}</p>
-          <p><strong>Submitted:</strong> ${deal.created_at || 'N/A'}</p>
-          <p><strong>Amount Requested:</strong> ${deal.requested_amount || 'N/A'}</p>
+          <p><strong>Created At:</strong> ${deal.created_at || 'N/A'}</p>
+          <p><strong>Deal ID:</strong> ${deal.deal_id || 'N/A'}</p>
+          <p><strong>Contact Name:</strong> ${deal.name || 'N/A'}</p>
+          <p><strong>Lenders:</strong> ${deal.lender_names || 'N/A'}</p>
         `;
         container.appendChild(div);
       });
+
+      renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+      const controls = document.getElementById('paginationControls');
+      controls.innerHTML = '';
+
+      if (totalPages <= 1) return;
+
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.innerText = i;
+        if (i === currentPage) btn.classList.add('active');
+        btn.onclick = () => {
+          currentPage = i;
+          renderDeals();
+        };
+        controls.appendChild(btn);
+      }
     }
 
     document.getElementById('userDropdown').addEventListener('change', (e) => {
       const userId = e.target.value;
       if (userId) fetchDealsForUser(userId);
+    });
+
+    document.getElementById('searchBar').addEventListener('input', () => {
+      currentPage = 1;
+      renderDeals();
     });
 
     function logout() {
