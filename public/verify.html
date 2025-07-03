@@ -106,7 +106,10 @@
         statusEl.className = 'success';
         if (data.email.toLowerCase() === 'govadamaheedhar@gmail.com') {
         setTimeout(() => window.location.href = '/admin.html', 1000);
-      } else {
+      } 
+        else if (data.email.toLowerCase() === 'team@shopfunder.com') {
+        setTimeout(() => window.location.href = '/shopfunder.html', 1000);
+      }  else {
         setTimeout(() => window.location.href = '/dashboard.html', 1000);
       }
     } else {
