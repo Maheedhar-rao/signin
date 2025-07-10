@@ -170,11 +170,11 @@
       return res.json();
     })
     .then(data => {
-    const userEmail = data.email.trim().toLowerCase();
-      if (userEmail === 'team@shopfunder.com') {
-        window.location.href = 'https://submissions.croccrm.com/lender-shopfunder.html';
-        return;
-       }
+    //const userEmail = data.email.trim().toLowerCase();
+      //if (userEmail === 'team@shopfunder.com') {
+        //window.location.href = 'https://submissions.croccrm.com/lender-shopfunder.html';
+        //return;
+       //}
         document.getElementById('user-info').innerHTML = `
         ✅ Logged in as <b>${data.email}</b><br>
         🔐 Role: <b>${data.role}</b>
@@ -192,7 +192,7 @@
 
   document.getElementById('date-today').innerText += new Date().toLocaleDateString();
 
-  window.goToSubmissions = () => window.open('https://submissions.croccrm.com', '_blank');
+  window.goToSubmissions = () => window.open('https://submissions.croccrm.com/lender-shopfunder.html', '_blank');
   window.goToDashboard = () => window.open('https://dashboard.croccrm.com', '_blank');
   window.goToUpdates = () => window.open('https://dashboard.croccrm.com/updates', '_blank');
   window.goToAPI = () => window.open('https://dashboard.croccrm.com/api', '_blank');
