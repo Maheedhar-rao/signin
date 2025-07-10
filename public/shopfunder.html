@@ -170,7 +170,12 @@
       return res.json();
     })
     .then(data => {
-      document.getElementById('user-info').innerHTML = `
+    const userEmail = data.email.trim().toLowerCase();
+      if (userEmail === 'team@shopfunder.com') {
+        window.location.href = 'https://submissions.croccrm.com/lender-shopfunder.html';
+        return;
+       }
+        document.getElementById('user-info').innerHTML = `
         ✅ Logged in as <b>${data.email}</b><br>
         🔐 Role: <b>${data.role}</b>
       `;
