@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>🐊 CROC | ShoFunder Dashboard</title>
+  <title>🐊 CROC | Shopfunder Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@1.0.3/dist/chartjs-plugin-doughnutlabel.min.js"></script>
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <h1>Welcome to Your ShoFunder Dashboard</h1>
+    <h1>Welcome to Your Dashboard</h1>
     <p id="user-info">Loading user info...</p>
 
     <div class="button-group">
@@ -144,6 +144,7 @@
       <button onclick="goToAPI()">API</button>
       <button onclick="logout()">Logout</button>
     </div>
+<!--
 
     <div class="dashboard-grid">
       <div class="chart-box"><canvas id="funnelChart"></canvas></div>
@@ -156,7 +157,7 @@
 
     <div class="total-deals" id="total-deals">Loading total deals submitted...</div>
   </div>
-
+-->
   <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -207,7 +208,7 @@
   };
 
   // Draw analytics charts
-  async function drawCharts() {
+ /* async function drawCharts() {
     try {
       const { data: allDeals, error: allDealsError } = await supabase.from('deals_submitted').select('*');
       if (allDealsError) throw allDealsError;
@@ -255,6 +256,7 @@
   }
 
   await drawCharts();
+  */
   </script>
 </body>
 </html>
