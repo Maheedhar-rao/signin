@@ -100,7 +100,7 @@ router.get('/api/users', verifyCookieJWT, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('registered_users')
-      .select('id, email')
+      .select('id, email, status')
       .order('email');
 
     if (error) throw error;
@@ -135,6 +135,28 @@ router.get('/api/deals', verifyCookieJWT, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch deals' });
   }
 });
+
+router.post('/api/disable-user', verifyCookieJWT, async (req, res) => {
+  const user = req.user;
+  if (user.role !== 'admin') {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  const { userId } = req.body;
+
+  const { error } = await supabase
+    .from('registered_users')
+    .update({ status: 'disabled' })
+    .eq('id', userId);
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to disable user' });
+  }
+
+  res.json({ message: 'User disabled successfully' });
+});
+
 
 
 module.exports = router;
