@@ -100,7 +100,7 @@
       if (res.ok) {
         window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
       } else {
-        document.getElementById('status').innerText = '❌ Email not found';
+        document.getElementById('status').innerText = `❌ ${data.message}`;
       }
     });
   </script>
