@@ -46,6 +46,10 @@ router.post('/verify-code', async (req, res) => {
     .eq('email', email)
     .single();
 
+   if (!user || user.status === 'disabled') {
+    return res.status(403).json({ message: 'Your account has been disabled. Please contact CROC CRM' });
+  }
+
   const token = signToken(user);
 
   res.cookie('token', token, {
