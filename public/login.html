@@ -100,7 +100,12 @@
       if (res.ok) {
         window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
       } else {
-        document.getElementById('status').innerText = `❌ ${data.message}`;
+        try {
+        const data = await res.json();
+        document.getElementById('status').innerText = `❌ ${data.message || 'Access denied'}`;
+      } catch (err) {
+        document.getElementById('status').innerText = '❌ Contact admin.';
+      }
       }
     });
   </script>
