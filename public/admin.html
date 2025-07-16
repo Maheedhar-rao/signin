@@ -180,17 +180,22 @@
       }
     }
 
-    async function fetchUsers() {
-      const res = await fetch('/auth/api/users', { credentials: 'include' });
-      const users = await res.json();
-      const dropdown = document.getElementById('userDropdown');
-      users.forEach(u => {
-        const opt = document.createElement('option');
-        opt.value = u.id;
-        opt.textContent = u.email;
-        dropdown.appendChild(opt);
-      });
-    }
+  async function fetchUsers() {
+  const res = await fetch('/auth/api/users', { credentials: 'include' });
+  const users = await res.json();
+  const dropdown = document.getElementById('userDropdown');
+  dropdown.innerHTML = '<option value="">🔽 Select a user</option>';
+
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = `${u.email} (${u.status || 'active'})`;
+    opt.setAttribute('data-email', u.email);
+    opt.setAttribute('data-status', u.status);
+    dropdown.appendChild(opt);
+  });
+}
+
 
     async function fetchDealsForUser(userId) {
       const res = await fetch(`/auth/api/deals?userId=${userId}`, { credentials: 'include' });
