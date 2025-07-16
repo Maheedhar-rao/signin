@@ -288,6 +288,30 @@
         else history.pushState(null, null, location.href);
       };
     };
+    document.getElementById('killSwitchBtn').addEventListener('click', async () => {
+  const dropdown = document.getElementById('userDropdown');
+  const userId = dropdown.value;
+  const email = dropdown.options[dropdown.selectedIndex]?.getAttribute('data-email');
+
+  if (!userId) return alert("Please select a user.");
+
+  const confirmKill = confirm(`Are you sure you want to disable ${email}?`);
+  if (!confirmKill) return;
+
+  const res = await fetch('/auth/api/disable-user', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId })
+  });
+
+  const result = await res.json();
+  document.getElementById('killStatus').innerText = result.message || 'User disabled';
+
+
+  fetchUsers();
+});
+
   </script>
 </body>
 </html>
