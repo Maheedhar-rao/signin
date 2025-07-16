@@ -20,7 +20,7 @@ router.post('/check-email', async (req, res) => {
     return res.status(401).json({ message: 'Email not found' });
   }
 
-    if (!user || user.status === 'disabled') {
+    if (user.status === 'disabled') {
     return res.status(403).json({ message: 'Your account has been disabled. Please contact CROC CRM' });
   }
 
