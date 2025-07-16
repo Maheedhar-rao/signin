@@ -12,9 +12,13 @@ router.post('/check-email', async (req, res) => {
 
   const { data: user, error } = await supabase
     .from('registered_users')
-    .select('id, email')
+    .select('id, email, status')
     .eq('email', email)
     .single();
+
+    if (!user || user.status === 'disabled') {
+    return res.status(403).json({ message: 'Your account has been disabled. Please contact CROC CRM' });
+  }
 
   if (error || !user) return res.status(401).json({ message: 'Email not found' });
 
@@ -46,9 +50,7 @@ router.post('/verify-code', async (req, res) => {
     .eq('email', email)
     .single();
 
-   if (!user || user.status === 'disabled') {
-    return res.status(403).json({ message: 'Your account has been disabled. Please contact CROC CRM' });
-  }
+ 
 
   const token = signToken(user);
 
