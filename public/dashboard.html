@@ -257,6 +257,31 @@
       document.getElementById('total-deals').innerText = ' Error loading data.';
     }
   }
+    
+new Chart(document.getElementById('gaugeWeek'), {
+  type: 'doughnut',
+  data: {
+    datasets: [{
+      data: [weeklyCount, Math.max(50 - weeklyCount, 0)],
+      backgroundColor: ['#3498DB', '#ecf0f1'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    rotation: -90,
+    circumference: 180,
+    cutout: '70%',
+    plugins: {
+      doughnutlabel: {
+        labels: [
+          { text: `${weeklyCount}`, font: { size: 24 } },
+          { text: 'This Week', font: { size: 14 } }
+        ]
+      },
+      legend: { display: false }
+    }
+  }
+});
 
   await drawCharts();
   </script>
