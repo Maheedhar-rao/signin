@@ -257,31 +257,32 @@
       document.getElementById('total-deals').innerText = ' Error loading data.';
     }
   }
-    
-new Chart(document.getElementById('gaugeWeek'), {
-  type: 'doughnut',
-  data: {
-    datasets: [{
-      data: [weeklyCount, Math.max(50 - weeklyCount, 0)],
-      backgroundColor: ['#3498DB', '#ecf0f1'],
-      borderWidth: 0
-    }]
-  },
-  options: {
-    rotation: -90,
-    circumference: 180,
-    cutout: '70%',
-    plugins: {
-      doughnutlabel: {
-        labels: [
-          { text: `${weeklyCount}`, font: { size: 24 } },
-          { text: 'This Week', font: { size: 14 } }
-        ]
-      },
-      legend: { display: false }
-    }
-  }
-});
+    const growthPercent = 22;
+
+      new Chart(document.getElementById('gaugeGrowth'), {
+        type: 'doughnut',
+        data: {
+          datasets: [{
+            data: [growthPercent, 100 - growthPercent],
+            backgroundColor: ['#F1C40F', '#ecf0f1'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          rotation: -90,
+          circumference: 180,
+          cutout: '70%',
+          plugins: {
+            doughnutlabel: {
+              labels: [
+                { text: `${growthPercent}%`, font: { size: 24 } },
+                { text: 'Growth', font: { size: 14 } }
+              ]
+            },
+            legend: { display: false }
+          }
+        }
+      });
 
   await drawCharts();
   </script>
