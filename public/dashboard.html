@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <title>🐊 CROC | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@1.0.3/dist/chartjs-plugin-doughnutlabel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -136,11 +133,11 @@
     <p id="user-info">Loading user info...</p>
 
     <div class="button-group">
-      <button onclick="goToSubmissions()">Submissions</button>
-      <button onclick="goToDashboard()">Dashboard</button>
-      <button onclick="goToUpdates()">Updates</button>
-      <button onclick="goToAPI()">API</button>
-      <button onclick="logout()">Logout</button>
+      <button id="btn-submissions">Submissions</button>
+      <button id="btn-dashboard">Dashboard</button>
+      <button id="btn-updates">Updates</button>
+      <button id="btn-api">API</button>
+      <button id="btn-logout">Logout</button>
     </div>
 
     <div class="dashboard-grid">
@@ -157,111 +154,131 @@
 
   <script type="module">
     import Chart from 'https://cdn.jsdelivr.net/npm/chart.js/+esm';
-    import ChartDoughnutLabel from 'https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@1.0.3/+esm';
-    Chart.register(ChartDoughnutLabel);
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import ChartDatalabels from 'https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import md5 from 'https://cdn.jsdelivr.net/npm/blueimp-md5/+esm';
 
-  const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
-  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    Chart.register(ChartDatalabels);
 
-  fetch('/auth/me', { credentials: 'include' })
-    .then(res => {
-      if (!res.ok) throw new Error();
-      return res.json();
-    })
-    .then(data => {
-      document.getElementById('user-info').innerHTML = `
-        ✅ Logged in as <b>${data.email}</b><br>
-        🔐 Role: <b>${data.role}</b>
-      `;
-      document.getElementById('user-name').innerText = data.email;
-      document.getElementById('user-role').innerText = data.role;
+    const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      const hash = md5(data.email.trim().toLowerCase());
-      document.getElementById('profile-img').src = `https://www.gravatar.com/avatar/${hash}?d=mp`;
-    })
-    .catch(() => {
-      alert("Unauthorized. Redirecting to login.");
-      location.replace('/login.html');
+    document.getElementById('date-today').innerText += new Date().toLocaleDateString();
+
+    document.getElementById('btn-submissions').addEventListener('click', () => {
+      window.location.href = 'https://submissions.croccrm.com';
     });
 
-  document.getElementById('date-today').innerText += new Date().toLocaleDateString();
+    document.getElementById('btn-dashboard').addEventListener('click', () => {
+      window.location.href = 'https://dashboard.croccrm.com';
+    });
 
-  window.goToSubmissions = () => window.location.href ='https://submissions.croccrm.com';
-  window.goToDashboard = () => window.location.href ='https://dashboard.croccrm.com';
-  window.goToUpdates = () => window.location.href ='https://dashboard.croccrm.com/updates';
-  window.goToAPI = () => window.location.href ='https://dashboard.croccrm.com/api';
-  window.logout = () => {
-    fetch('/auth/logout', { method: 'POST', credentials: 'include' })
-      .then(() => {
-        localStorage.setItem('logout', Date.now());
-        history.replaceState(null, null, '/login.html');
-        window.location.href = '/login.html';
-      });
-  };
+    document.getElementById('btn-updates').addEventListener('click', () => {
+      window.location.href = 'https://dashboard.croccrm.com/updates';
+    });
 
-  history.pushState(null, null, location.href);
-  window.onpopstate = () => {
-    const confirmLogout = confirm("Are you sure you want to logout?");
-    if (confirmLogout) logout();
-    else history.pushState(null, null, location.href);
-  };
+    document.getElementById('btn-api').addEventListener('click', () => {
+      window.location.href = 'https://dashboard.croccrm.com/api';
+    });
 
-  // Draw analytics charts
-  async function drawCharts() {
-    try {
-      const { data: allDeals, error: allDealsError } = await supabase.from('deals_submitted').select('*');
-      if (allDealsError) throw allDealsError;
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => {
+          localStorage.setItem('logout', Date.now());
+          history.replaceState(null, null, '/login.html');
+          window.location.href = '/login.html';
+        });
+    });
 
-      document.getElementById('total-deals').innerText = `📈 Total Deals Submitted: ${allDeals.length}`;
-
-      const today = new Date().toISOString().split('T')[0];
-      console.log('📅 Querying deals_submitted for:', today);
-
-      const { data: todayDeals, error: todayError } = await supabase
-        .from('deals_submitted')
-        .select('*')
-        .gte('creation_date', `${today}T00:00:00`)
-        .lte('creation_date', `${today}T23:59:59`);
-
-      if (todayError) {
-        console.error('❌ Error fetching today’s deals:', todayError);
+    history.pushState(null, null, location.href);
+    window.onpopstate = () => {
+      const confirmLogout = confirm("Are you sure you want to logout?");
+      if (confirmLogout) {
+        fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+          .then(() => {
+            localStorage.setItem('logout', Date.now());
+            history.replaceState(null, null, '/login.html');
+            window.location.href = '/login.html';
+          });
+      } else {
+        history.pushState(null, null, location.href);
       }
+    };
 
-      const todayCount = Array.isArray(todayDeals) ? todayDeals.length : 0;
+    // Load user info
+    fetch('/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('user-info').innerHTML = `
+          ✅ Logged in as <b>${data.email}</b><br>
+          🔐 Role: <b>${data.role}</b>
+        `;
+        document.getElementById('user-name').innerText = data.email;
+        document.getElementById('user-role').innerText = data.role;
 
-      new Chart(document.getElementById('gaugeToday'), {
-        type: 'doughnut',
-        data: {
-          datasets: [{
-            data: [todayCount, Math.max(10 - todayCount, 0)],
-            backgroundColor: ['#2ECC71', '#ecf0f1'],
-            borderWidth: 0
-          }]
-        },
-        options: {
-          rotation: -90,
-          circumference: 180,
-          cutout: '70%',
-          plugins: {
-            doughnutlabel: {
-              labels: [
-                { text: `${todayCount}`, font: { size: 24 } },
-                { text: 'Today', font: { size: 14 } }
-              ]
-            },
-            legend: { display: false }
-          }
-        }
+        const hash = md5(data.email.trim().toLowerCase());
+        document.getElementById('profile-img').src = `https://www.gravatar.com/avatar/${hash}?d=mp`;
+      })
+      .catch(() => {
+        alert("Unauthorized. Redirecting to login.");
+        location.replace('/login.html');
       });
 
-    } catch (err) {
-      console.error(' Critical dashboard error:', err.message || err);
-      document.getElementById('total-deals').innerText = ' Error loading data.';
-    }
-  }
+    // Draw Chart
+    async function drawCharts() {
+      try {
+        const { data: allDeals, error: allDealsError } = await supabase.from('deals_submitted').select('*');
+        if (allDealsError) throw allDealsError;
 
-  await drawCharts();
+        document.getElementById('total-deals').innerText = `📈 Total Deals Submitted: ${allDeals.length}`;
+
+        const today = new Date().toISOString().split('T')[0];
+        const { data: todayDeals, error: todayError } = await supabase
+          .from('deals_submitted')
+          .select('*')
+          .gte('creation_date', `${today}T00:00:00`)
+          .lte('creation_date', `${today}T23:59:59`);
+
+        if (todayError) {
+          console.error('❌ Error fetching today’s deals:', todayError);
+        }
+
+        const todayCount = Array.isArray(todayDeals) ? todayDeals.length : 0;
+
+        new Chart(document.getElementById('gaugeToday'), {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [todayCount, Math.max(10 - todayCount, 0)],
+              backgroundColor: ['#2ECC71', '#ecf0f1'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            rotation: -90,
+            circumference: 180,
+            cutout: '70%',
+            plugins: {
+              datalabels: {
+                display: true,
+                align: 'center',
+                font: { size: 24, weight: 'bold' },
+                formatter: () => `${todayCount}`
+              },
+              legend: { display: false }
+            }
+          }
+        });
+      } catch (err) {
+        console.error('Critical dashboard error:', err.message || err);
+        document.getElementById('total-deals').innerText = ' Error loading data.';
+      }
+    }
+
+    await drawCharts();
   </script>
 </body>
 </html>
