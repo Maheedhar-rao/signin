@@ -184,10 +184,10 @@
 
   document.getElementById('date-today').innerText += new Date().toLocaleDateString();
 
-  window.goToSubmissions = () => window.open('https://submissions.croccrm.com', '_blank');
-  window.goToDashboard = () => window.open('https://dashboard.croccrm.com', '_blank');
-  window.goToUpdates = () => window.open('https://dashboard.croccrm.com/updates', '_blank');
-  window.goToAPI = () => window.open('https://dashboard.croccrm.com/api', '_blank');
+  window.goToSubmissions = () => window.open('https://submissions.croccrm.com');
+  window.goToDashboard = () => window.open('https://dashboard.croccrm.com');
+  window.goToUpdates = () => window.open('https://dashboard.croccrm.com/updates');
+  window.goToAPI = () => window.open('https://dashboard.croccrm.com/api');
   window.logout = () => {
     fetch('/auth/logout', { method: 'POST', credentials: 'include' })
       .then(() => {
