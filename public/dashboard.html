@@ -284,6 +284,78 @@
         }
       });
 
+    new Chart(document.getElementById('funnelChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Leads', 'Qualified', 'Proposals', 'Closed'],
+        datasets: [{
+          label: 'Funnel',
+          data: [120, 90, 45, 20],
+          backgroundColor: '#3498DB'
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('forecastChart'), {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        datasets: [{
+          label: 'Forecast',
+          data: [2, 4, 3, 6, 5],
+          fill: false,
+          borderColor: '#8E44AD',
+          tension: 0.4
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('sourceChart'), {
+      type: 'pie',
+      data: {
+        labels: ['Organic', 'Referral', 'Paid'],
+        datasets: [{
+          data: [40, 30, 30],
+          backgroundColor: ['#2ECC71', '#3498DB', '#E67E22']
+        }]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+    new Chart(document.getElementById('productChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Product A', 'Product B', 'Product C'],
+        datasets: [{
+          label: 'Sales',
+          data: [50, 75, 100],
+          backgroundColor: '#E74C3C'
+        }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+
+
+
+
   await drawCharts();
   </script>
 </body>
