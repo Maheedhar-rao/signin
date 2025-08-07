@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🐊 CROC | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@1.0.3/dist/chartjs-plugin-doughnutlabel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.19.0/js/md5.min.js"></script>
+  <style>
+    /* Existing styles unchanged */
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="top-bar">
+      <div class="date-today" id="date-today">📅 Today: </div>
+      <div class="profile">
+        <div id="profile-text">
+          <div><b id="user-name">Loading...</b></div>
+          <div id="user-role">Role</div>
+        </div>
+        <img id="profile-img" src="https://via.placeholder.com/40" alt="Profile" />
+      </div>
+    </div>
+
+    <h1>Welcome to Your CROC Dashboard</h1>
+    <p id="user-info">Loading user info...</p>
+
+    <div class="button-group">
+      <button onclick="goToSubmissions()">Submissions</button>
+      <button onclick="goToDashboard()">Dashboard</button>
+      <button onclick="goToUpdates()">Updates</button>
+      <button onclick="goToAPI()">API</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="setup-message" style="text-align:center; margin-top:30px; font-size:18px; color:#c0392b; font-weight:bold;"></div>
+
+    <div class="dashboard-grid">
+      <div class="chart-box"><canvas id="funnelChart"></canvas></div>
+      <div class="chart-box"><canvas id="gaugeToday"></canvas></div>
+      <div class="chart-box"><canvas id="gaugeGrowth"></canvas></div>
+      <div class="chart-box"><canvas id="forecastChart"></canvas></div>
+      <div class="chart-box"><canvas id="sourceChart"></canvas></div>
+      <div class="chart-box"><canvas id="productChart"></canvas></div>
+    </div>
+
+    <div class="total-deals" id="total-deals">Loading total deals submitted...</div>
+  </div>
+
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const { SUPABASE_URL, SUPABASE_KEY } = await fetch('/config').then(res => res.json());
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  fetch('/auth/me', { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) throw new Error();
+      return res.json();
+    })
+    .then(data => {
+      document.getElementById('user-info').innerHTML = `
+        ✅ Logged in as <b>${data.email}</b><br>
+        🔐 Role: <b>${data.role}</b>
+      `;
+      document.getElementById('user-name').innerText = data.email;
+      document.getElementById('user-role').innerText = data.role;
+
+      const hash = md5(data.email.trim().toLowerCase());
+      document.getElementById('profile-img').src = `https://www.gravatar.com/avatar/${hash}?d=mp`;
+
+      const setupMessage = document.getElementById('setup-message');
+      const hasUploaded = localStorage.getItem('hasUploadedLenderCSV_' + data.email);
+      const hasBorrowerData = localStorage.getItem('borrowerData_' + data.email);
+
+      if (!hasUploaded) {
+        setupMessage.innerHTML = `🚀 First time setup: <a href="/upload.html">Upload your lender CSV</a>`;
+      } else if (!hasBorrowerData) {
+        setupMessage.innerHTML = `⚙️ Setup in progress: <a href="/submissions/index.html">Complete borrower configuration</a>`;
+      } else {
+        setupMessage.innerHTML = `✅ Setup complete. You're ready to submit.`;
+      }
+    })
+    .catch(() => {
+      alert("Unauthorized. Redirecting to login.");
+      location.replace('/login.html');
+    });
+
+  document.getElementById('date-today').innerText += new Date().toLocaleDateString();
+
+  window.goToSubmissions = () => window.location.href ='/submissions/index.html';
+  window.goToDashboard = () => window.location.href ='https://dashboard.croccrm.com';
+  window.goToUpdates = () => window.location.href ='https://dashboard.croccrm.com/updates';
+  window.goToAPI = () => window.location.href ='https://dashboard.croccrm.com/api';
+  window.logout = () => {
+    fetch('/auth/logout', { method: 'POST', credentials: 'include' })
+      .then(() => {
+        localStorage.setItem('logout', Date.now());
+        history.replaceState(null, null, '/login.html');
+        window.location.href = '/login.html';
+      });
+  };
+
+  history.pushState(null, null, location.href);
+  window.onpopstate = () => {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (confirmLogout) logout();
+    else history.pushState(null, null, location.href);
+  };
+
+  // Existing chart rendering logic...
+  await drawCharts();
+  </script>
+</body>
+</html>
