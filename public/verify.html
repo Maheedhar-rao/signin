@@ -110,12 +110,12 @@
         else if (data.email.toLowerCase() === 'team@shopfunder.com') {
         setTimeout(() => window.location.href = '/shopfunder.html', 1000);
         }
-        else if (dara.email.toLowerCase() === 'gmaheedhar7@gmail.com'){
+        else if (data.email.toLowerCase() === 'gmaheedhar7@gmail.com'){
         serTimeour(() => window.location.href = '/verdecredit.html', 1000);
       }  else {
         setTimeout(() => window.location.href = '/dashboard.html', 1000);
       }
-     else {
+      } else {
       statusEl.innerText = `❌ ${data.message || 'Invalid code'}`;
       statusEl.className = '';
     }
