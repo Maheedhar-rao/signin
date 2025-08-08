@@ -104,6 +104,7 @@
       if (res.ok && data.email) {
         statusEl.innerText = '✅ Login successful!';
         statusEl.className = 'success';
+        localStorage.setItem('userEmail', data.email.toLowerCase());
         if (data.email.toLowerCase() === 'govadamaheedhar@gmail.com') {
         setTimeout(() => window.location.href = '/admin.html', 1000);
       } 
