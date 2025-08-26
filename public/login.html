@@ -5,77 +5,14 @@
   <title>🐊 CROC | Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: linear-gradient(to right, #2c3e50, #4ca1af);
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #333;
-    }
-
-    .container {
-      background: #fff;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      position: relative;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      font-size: 28px;
-      color: #2c3e50;
-    }
-
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 12px 15px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #4ca1af;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    button:hover {
-      background: #357a8a;
-    }
-
-    #status {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #e74c3c;
-    }
-
-    .info {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #2c3e50;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: linear-gradient(to right, #2c3e50, #4ca1af); height: 100vh; display: flex; align-items: center; justify-content: center; color: #333; }
+    .container { background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,.2); width: 100%; max-width: 400px; text-align: center; }
+    h2 { margin-bottom: 20px; font-size: 28px; color: #2c3e50; }
+    input[type="email"], input[type="password"] { width: 100%; padding: 12px 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+    button { width: 100%; padding: 12px; margin-top: 10px; background: #4ca1af; color: white; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; transition: background .3s ease; }
+    button:hover { background: #357a8a; }
+    #status { margin-top: 15px; font-size: 14px; color: #e74c3c; min-height: 20px; }
   </style>
 </head>
 <body>
@@ -84,12 +21,8 @@
     <form id="loginForm" autocomplete="on">
       <input type="email" id="email" required placeholder="Enter your email" autocomplete="username" />
       <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password" />
-      <!-- Show password checkbox (no CSS changes) -->
       <div style="text-align:left; margin-top:6px;">
-        <label>
-          <input type="checkbox" id="showPwd" />
-          Show password
-        </label>
+        <label><input type="checkbox" id="showPwd" /> Show password</label>
       </div>
       <button type="submit" id="loginBtn">Login</button>
     </form>
@@ -103,7 +36,6 @@
     const pwdInput = document.getElementById('password');
     const emailInput = document.getElementById('email');
 
-    // Toggle password visibility
     document.getElementById('showPwd').addEventListener('change', (e) => {
       pwdInput.type = e.target.checked ? 'text' : 'password';
     });
@@ -120,16 +52,14 @@
         const res = await fetch('/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // receive HttpOnly JWT cookie
+          credentials: 'include',
           body: JSON.stringify({ email, password })
         });
 
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.ok) {
-          // mirror your verify.html redirect logic
           localStorage.setItem('userEmail', email);
-
           if (email === 'govadamaheedhar@gmail.com') {
             window.location.href = '/admin.html';
           } else if (email === 'team@shopfunder.com') {
