@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const authRoutes = require('./routes/auth');
 const verifyCookieJWT = require('./middleware/verifyCookieJWT'); // <-- fix path
 require('dotenv').config();
 
