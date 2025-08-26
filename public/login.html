@@ -84,6 +84,13 @@
     <form id="loginForm" autocomplete="on">
       <input type="email" id="email" required placeholder="Enter your email" autocomplete="username" />
       <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password" />
+      <!-- Show password checkbox (no CSS changes) -->
+      <div style="text-align:left; margin-top:6px;">
+        <label>
+          <input type="checkbox" id="showPwd" />
+          Show password
+        </label>
+      </div>
       <button type="submit" id="loginBtn">Login</button>
     </form>
     <p id="status"></p>
@@ -93,14 +100,21 @@
     const form = document.getElementById('loginForm');
     const statusEl = document.getElementById('status');
     const btn = document.getElementById('loginBtn');
+    const pwdInput = document.getElementById('password');
+    const emailInput = document.getElementById('email');
+
+    // Toggle password visibility
+    document.getElementById('showPwd').addEventListener('change', (e) => {
+      pwdInput.type = e.target.checked ? 'text' : 'password';
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       statusEl.textContent = '';
       btn.disabled = true;
 
-      const email = document.getElementById('email').value.trim().toLowerCase();
-      const password = document.getElementById('password').value;
+      const email = emailInput.value.trim().toLowerCase();
+      const password = pwdInput.value;
 
       try {
         const res = await fetch('/auth/login', {
@@ -113,9 +127,19 @@
         const data = await res.json().catch(() => ({}));
 
         if (res.ok && data.ok) {
-          window.location.href = '/dashboard.html';
+          // mirror your verify.html redirect logic
+          localStorage.setItem('userEmail', email);
+
+          if (email === 'govadamaheedhar@gmail.com') {
+            window.location.href = '/admin.html';
+          } else if (email === 'team@shopfunder.com') {
+            window.location.href = '/shopfunder.html';
+          } else if (email === 'gmaheedhar7@gmail.com') {
+            window.location.href = '/verdecredit.html';
+          } else {
+            window.location.href = '/dashboard.html';
+          }
         } else {
-          // Common server-side errors: INVALID_CREDENTIALS, ACCOUNT_INACTIVE, etc.
           statusEl.textContent = `❌ ${data.error || 'Login failed. Check your email/password.'}`;
         }
       } catch (err) {
