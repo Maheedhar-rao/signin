@@ -24,37 +24,50 @@ function cookieOpts() {
  */
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
+    const emailNorm = (req.body?.email || '').trim();
+    const passNorm  = (req.body?.password || '').trim();
+
+    if (!emailNorm || !passNorm) {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
+    console.log('LOGIN attempt ->', emailNorm);
+
     const { data: user, error: userErr } = await supabase
       .from('registered_users')
-      .select('id, email, role, status, password_hash')
-      .eq('email', email.toLowerCase())
-      .single();
+      .select('id, email, role, status, password')
+      .ilike('email', emailNorm)   // case-insensitive match
+      .single();                   // if multiple rows exist, this will error
 
     if (userErr || !user) {
+      console.log('LOGIN fail: user not found or query error:', userErr);
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    if (user.status === 'disabled') {
+
+    if ((user.status || '').toLowerCase() !== 'active') {
+      console.log('LOGIN fail: user status not active:', user.status);
       return res.status(403).json({ error: 'Your account has been disabled. Please contact CROC CRM' });
     }
-    if (!user.password_hash) {
-      return res.status(401).json({ error: 'Password not set for this account' });
+
+    const dbPass = (user.password || '').trim();
+    if (dbPass !== passNorm) {
+      console.log('LOGIN fail: bad password', { got: passNorm, dbLen: dbPass.length });
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const ok = await bcrypt.compare(password, user.password_hash);
-    if (!ok) return res.status(401).json({ error: 'Invalid email or password' });
+    const token = signToken({ id: user.id, email: user.email, role: user.role || 'user' });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      domain: process.env.NODE_ENV === 'production' ? '.croccrm.com' : undefined,
+      maxAge: 6 * 60 * 60 * 1000
+    });
 
-    const payload = { id: user.id, email: user.email, role: user.role || 'user' };
-    const token = signToken(payload);
-    res.cookie('token', token, cookieOpts());
-    res.json({ ok: true });
+    return res.json({ ok: true });
   } catch (err) {
     console.error('POST /auth/login error:', err);
-    res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: 'Server error' });
   }
 });
 
