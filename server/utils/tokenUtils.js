@@ -1,19 +1,16 @@
 const jwt = require('jsonwebtoken');
 
-const signToken = (user) => {
-  return jwt.sign({
-    id: user.id,
-    email: user.email,
-    role: user.role
-  }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRY });
-};
+const SECRET = process.env.JWT_SECRET;
+if (!SECRET) {
+  console.warn('WARNING: JWT_SECRET is not set');
+}
 
-const verifyToken = (token) => {
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET);
-  } catch {
-    return null;
-  }
-};
+function signToken(payload) {
+  return jwt.sign(payload, SECRET, { expiresIn: '6h' });
+}
+
+function verifyToken(token) {
+  return jwt.verify(token, SECRET);
+}
 
 module.exports = { signToken, verifyToken };
