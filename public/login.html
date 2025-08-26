@@ -38,7 +38,8 @@
       color: #2c3e50;
     }
 
-    input[type="email"] {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 12px 15px;
       margin: 10px 0;
@@ -80,32 +81,48 @@
 <body>
   <div class="container">
     <h2>🐊 Croc Login</h2>
-    <form id="emailForm">
-      <input type="email" id="email" required placeholder="Enter your email" />
-      <button type="submit">Next</button>
+    <form id="loginForm" autocomplete="on">
+      <input type="email" id="email" required placeholder="Enter your email" autocomplete="username" />
+      <input type="password" id="password" required placeholder="Enter your password" autocomplete="current-password" />
+      <button type="submit" id="loginBtn">Login</button>
     </form>
     <p id="status"></p>
   </div>
 
   <script>
-    document.getElementById('emailForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      let email = document.getElementById('email').value.trim().toLowerCase();
-      const res = await fetch('/auth/check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+    const form = document.getElementById('loginForm');
+    const statusEl = document.getElementById('status');
+    const btn = document.getElementById('loginBtn');
 
-      if (res.ok) {
-        window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
-      } else {
-        try {
-        const data = await res.json();
-        document.getElementById('status').innerText = `❌ ${data.message || 'Access denied'}`;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = '';
+      btn.disabled = true;
+
+      const email = document.getElementById('email').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // receive HttpOnly JWT cookie
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.ok) {
+          window.location.href = '/dashboard.html';
+        } else {
+          // Common server-side errors: INVALID_CREDENTIALS, ACCOUNT_INACTIVE, etc.
+          statusEl.textContent = `❌ ${data.error || 'Login failed. Check your email/password.'}`;
+        }
       } catch (err) {
-        document.getElementById('status').innerText = '❌ Contact admin.';
-      }
+        console.error(err);
+        statusEl.textContent = '❌ Network error. Please try again.';
+      } finally {
+        btn.disabled = false;
       }
     });
   </script>
